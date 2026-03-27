@@ -50,9 +50,15 @@ document.addEventListener('DOMContentLoaded', () => {
             icon.classList.toggle('fa-times');
         });
 
-        // Close menu when a link is clicked (Mobile)
+        // Close menu when a link is clicked (Mobile),
+        // but NOT if the link is inside a dropdown menu
         document.querySelectorAll('.nav-links a').forEach(link => {
-            link.addEventListener('click', () => {
+            link.addEventListener('click', (e) => {
+                // If this link is inside a dropdown-menu, do not close the menu
+                if (link.closest('.dropdown-menu')) {
+                    // Do nothing, let dropdown logic handle
+                    return;
+                }
                 navLinks.classList.remove('active');
                 const icon = navToggle.querySelector('i');
                 if (icon) {
@@ -62,40 +68,29 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
 
-        // --- Mobile Dropdown: tap "Programs" to toggle ---
-        const dropdownParent = document.querySelector('.nav-links .dropdown');
-        if (dropdownParent) {
-            const dropdownTrigger = dropdownParent.querySelector('a');
-
-            dropdownTrigger.addEventListener('click', (e) => {
-                // Only intercept on mobile screens
-                if (window.innerWidth <= 768) {
+        // --- Mobile Dropdown Toggle ---
+        // Only enable on mobile (width <= 1200px)
+        const dropdown = document.querySelector('.dropdown');
+        if (dropdown) {
+            const dropdownLink = dropdown.querySelector('a');
+            const dropdownMenuLinks = dropdown.querySelectorAll('.dropdown-menu a');
+            dropdownLink.addEventListener('click', function (e) {
+                // Only on mobile
+                if (window.innerWidth <= 1200) {
                     e.preventDefault();
-                    e.stopPropagation(); // don't bubble to nav close logic
-                    dropdownParent.classList.toggle('dropdown-open');
+                    // Toggle dropdown only, do NOT close menubar
+                    dropdown.classList.toggle('dropdown-open');
                 }
             });
-
-            // Sub-links: close the dropdown AND the whole mobile nav after clicking
-            dropdownParent.querySelectorAll('.dropdown-menu a').forEach(subLink => {
-                subLink.addEventListener('click', () => {
-                    dropdownParent.classList.remove('dropdown-open');
-                    navLinks.classList.remove('active');
-                    const icon = navToggle.querySelector('i');
-                    if (icon) {
-                        icon.classList.add('fa-bars');
-                        icon.classList.remove('fa-times');
+            // Do NOT close menubar or affect dropdown when a dropdown menu item is clicked (mobile only)
+            dropdownMenuLinks.forEach(link => {
+                link.addEventListener('click', function (e) {
+                    if (window.innerWidth <= 1200) {
+                        e.stopPropagation(); // Prevent bubbling to parent
                     }
                 });
             });
         }
-
-        // Close dropdown when hamburger is toggled off
-        navToggle.addEventListener('click', () => {
-            if (!navLinks.classList.contains('active') && dropdownParent) {
-                dropdownParent.classList.remove('dropdown-open');
-            }
-        });
     }
 
     // --- Advanced Scroll Reveal (Staggered) ---
@@ -275,3 +270,4 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
